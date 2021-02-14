@@ -8,13 +8,11 @@ namespace ActionWorkflow
 {
     public class ActionBundle<T>
     {
-        private readonly IActionContext _context;
-        private readonly IEnumerable<IAction<T>> _actions;
+        private readonly IEnumerable<ActionItem<T>> _items;
 
-        public ActionBundle(IActionContext context, IEnumerable<IAction<T>> actions)
+        public ActionBundle(IEnumerable<ActionItem<T>> items)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _actions = actions ?? throw new ArgumentNullException(nameof(actions));
+            _items = items ?? throw new ArgumentNullException(nameof(items));
         }
 
         public async Task ExecuteAsync(T context)
@@ -26,22 +24,33 @@ namespace ActionWorkflow
             {
                 trace?.AddEvent(ActionTraceEvent.Begin, this.ToString());
 
-                foreach (var curAction in _actions)
+                foreach (var curItem in _items)
                 {
-                    if (curAction == null)
+                    if (curItem == null)
                     {
                         continue;
                     }
 
-                    // TODO: Find a faster/optimized way to determine the action-info
-                    var actionInfo = ActionSequenceFactory<T>.GetActionInfo(curAction.GetType());
-                    var actionIdentifier = actionInfo.ToString();
+                    // Build the action-identifier for tracing
+                    var actionIdentifier = trace == null
+                        ? null
+                        : curItem.ActionContext.Name + (curItem.ActionContext.Description == null ? null : $"({curItem.ActionContext.Description})");
 
                     try
                     {
                         trace?.AddEvent(ActionTraceEvent.Begin, actionIdentifier);
 
-                        await curAction.ExecuteAsync(context);
+                        await curItem.Action.ExecuteAsync(context);
+
+                        // Add all exports to the global export-provider when the action finished successfully
+                        // -> If the action would throw an exception we don't want to add already exported objects to it
+                        foreach (var curExport in curItem.ActionContext.Exports)
+                        {
+                            if (!curItem.ExportProvider.TryExport(curExport.Key, curExport.Value))
+                            {
+                                throw new InvalidOperationException($"An object of type \"{curExport.Key.FullName}\" was already exported. Each type can only be exported once.");
+                            }
+                        }
 
                         trace?.AddEvent(ActionTraceEvent.End, actionIdentifier);
                     }
@@ -61,9 +70,7 @@ namespace ActionWorkflow
 
         public override string ToString()
         {
-            return $"{nameof(ActionBundle<T>)} ({_actions.Count()})";
+            return $"{nameof(ActionBundle<T>)} ({_items.Count()})";
         }
-
-        public IActionContext ActionContext => _context;
     }
 }

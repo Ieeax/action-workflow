@@ -1,26 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 namespace ActionWorkflow
 {
     public class ActionExportProvider : IExportProvider
     {
-        private readonly Dictionary<Type, object> _exports = new Dictionary<Type, object>();
+        private readonly ConcurrentDictionary<Type, object> _exports = new ConcurrentDictionary<Type, object>();
 
-        public void AddRange(IEnumerable<object> values)
-        {
-            foreach (var curItem in values)
-            {
-                if (curItem == null)
-                {
-                    continue;
-                }
+        public bool TryExport(Type exportType, object value)
+            => _exports.TryAdd(exportType, value);
 
-                _exports.Add(curItem.GetType(), curItem);
-            }
-        }
-
-        public bool Contains(Type exportType)
+        public bool ContainsExport(Type exportType)
             => _exports.ContainsKey(exportType);
 
         public object GetExport(Type exportType)

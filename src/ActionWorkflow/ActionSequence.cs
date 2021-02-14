@@ -30,10 +30,7 @@ namespace ActionWorkflow
 
         private ActionBundle<T> GetNextActionBundle()
         {
-            IServiceProvider serviceProvider = null;
-            IActionContext context = null;
-
-            List<IAction<T>> instances = null;
+            List<ActionItem<T>> entries = null;
 
             for (int i = 0; i < _actionInfos.Count; i++)
             {
@@ -44,7 +41,7 @@ namespace ActionWorkflow
                     bool continueLoop = false;
                     foreach (var curImportType in curActionInfo.TypesToImport)
                     {
-                        if (!_exportProvider.Contains(curImportType))
+                        if (!_exportProvider.ContainsExport(curImportType))
                         {
                             continueLoop = true;
                             break;
@@ -57,24 +54,32 @@ namespace ActionWorkflow
                     }
                 }
 
-                if (instances == null)
+                if (entries == null)
                 {
-                    context = new DefaultActionContext();
-                    serviceProvider = new DefaultActionServiceProvider(context, _exportProvider, _serviceProvider);
-                    instances = new List<IAction<T>>();
+                    entries = new List<ActionItem<T>>();
                 }
 
-                instances.Add(
-                    (IAction<T>)ActivatorUtilities.CreateInstance(
-                        serviceProvider,
-                        curActionInfo.ActionType));
+                entries.Add(
+                    this.CreateActionItem(curActionInfo));
 
                 _actionInfos.RemoveAt(i--);
             }
 
-            return instances == null 
+            return entries == null 
                 ? null 
-                : new ActionBundle<T>(context, instances);
+                : new ActionBundle<T>(entries);
+        }
+
+        private ActionItem<T> CreateActionItem(ActionInfo actionInfo)
+        {
+            var context = new DefaultActionContext(_exportProvider, actionInfo);
+            var serviceProvider = new DefaultActionServiceProvider(context, _exportProvider, _serviceProvider);
+
+            return new ActionItem<T>(
+                (IAction<T>)ActivatorUtilities.CreateInstance(serviceProvider, actionInfo.ActionType),
+                context,
+                _exportProvider,
+                serviceProvider);
         }
 
         public async Task<ActionSequenceExecutionResult> ExecuteAsync(T context)
@@ -97,10 +102,6 @@ namespace ActionWorkflow
 
                     // Execute all actions in the bundle
                     await actionBundle.ExecuteAsync(context);
-
-                    // Add all exports to the export-provider
-                    _exportProvider.AddRange(
-                        actionBundle.ActionContext.Exports);
                 }
 
                 trace?.AddEvent(ActionTraceEvent.End, this.ToString());

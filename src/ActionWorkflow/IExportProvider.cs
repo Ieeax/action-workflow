@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace ActionWorkflow
 {
     public interface IExportProvider
     {
-        void AddRange(IEnumerable<object> values);
+        bool TryExport(Type exportType, object value);
 
-        bool Contains(Type exportType);
+        bool ContainsExport(Type exportType);
 
         object GetExport(Type exportType);
     }
