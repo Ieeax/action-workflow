@@ -16,6 +16,11 @@ namespace ActionWorkflow.Tracing
             Exception = exception;
         }
 
+        public override string ToString()
+        {
+            return $"[{EventType}] {Identifier}";
+        }
+
         public ActionTraceEvent EventType { get; }
 
         public string Identifier { get; }

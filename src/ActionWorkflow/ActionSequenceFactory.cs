@@ -9,6 +9,8 @@ namespace ActionWorkflow
     public class ActionSequenceFactory<T>
     {
         private static readonly Dictionary<Type, ActionInfo> _cachedActionInfos = new Dictionary<Type, ActionInfo>();
+        private static readonly object _cachedActionInfosLock = new object();
+
         private readonly IList<ActionInfo> _actionInfos;
 
         private ActionSequenceFactory(IList<ActionInfo> actionInfos)
@@ -39,6 +41,12 @@ namespace ActionWorkflow
 
                         bestConstructor = curConstructor;
                         seenPreferred = true;
+                        continue;
+                    }
+
+                    if (bestConstructor == null)
+                    {
+                        bestConstructor = curConstructor;
                     }
                 }
             }
@@ -72,33 +80,36 @@ namespace ActionWorkflow
                 throw new ArgumentNullException(nameof(actionType));
             }
 
-            if (_cachedActionInfos.TryGetValue(actionType, out var actionInfo))
+            lock (_cachedActionInfosLock)
             {
+                if (_cachedActionInfos.TryGetValue(actionType, out var actionInfo))
+                {
+                    return actionInfo;
+                }
+
+                if (!typeof(IAction<T>).IsAssignableFrom(actionType) || actionType.IsAbstract)
+                {
+                    throw new InvalidOperationException($"Type \"{actionType.FullName}\" does not inherit from \"{typeof(IAction<T>).FullName}\".");
+                }
+
+                if (!TryGetActionConstructor(actionType, out var constructorInfo))
+                {
+                    throw new InvalidOperationException($"No constructor for type \"{actionType.FullName}\" was found.");
+                }
+
+                var metadataAttr = actionType.GetCustomAttribute<ActionAttribute>(false);
+
+                var imports = GetTypesToImport(constructorInfo);
+                actionInfo = new ActionInfo(
+                    actionType,
+                    metadataAttr?.FriendlyName,
+                    metadataAttr?.Description,
+                    imports);
+
+                _cachedActionInfos.Add(actionType, actionInfo);
+
                 return actionInfo;
             }
-
-            if (!typeof(IAction<T>).IsAssignableFrom(actionType))
-            {
-                throw new InvalidOperationException($"Type \"{actionType.FullName}\" does not inherit from \"{typeof(IAction<T>).FullName}\".");
-            }
-
-            if (!TryGetActionConstructor(actionType, out var constructorInfo))
-            {
-                throw new InvalidOperationException($"No constructor for type \"{actionType.FullName}\" was found.");
-            }
-
-            var metadataAttr = actionType.GetCustomAttribute<ActionAttribute>(false);
-
-            var imports = GetTypesToImport(constructorInfo);
-            actionInfo = new ActionInfo(
-                actionType, 
-                metadataAttr?.FriendlyName, 
-                metadataAttr?.Description, 
-                imports);
-
-            _cachedActionInfos.Add(actionType, actionInfo);
-
-            return actionInfo;
         }
 
         public static ActionSequenceFactory<T> CreateFactory(ICollection<Type> actions)

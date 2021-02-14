@@ -20,7 +20,7 @@ namespace ActionWorkflow
 
         public void AddAction(Type actionType)
         {
-            if (!typeof(IAction<T>).IsAssignableFrom(actionType))
+            if (!typeof(IAction<T>).IsAssignableFrom(actionType) || actionType.IsAbstract)
             {
                 throw new InvalidOperationException($"Type \"{actionType.FullName}\" does not inherit from \"{typeof(IAction<T>).FullName}\".");
             }

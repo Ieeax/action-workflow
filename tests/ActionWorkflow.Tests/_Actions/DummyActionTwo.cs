@@ -1,11 +1,21 @@
-﻿using System.Threading.Tasks;
+﻿using ActionWorkflow.Tracing;
+using System.Threading.Tasks;
 
 namespace ActionWorkflow.Tests
 {
-    public class DummyActionTwo : IAction<string>
+    public class DummyActionTwo : IAction<IActionTracingContainer>
     {
-        public Task ExecuteAsync(string context)
+        private readonly IActionContext _actionContext;
+
+        public DummyActionTwo(IActionContext actionContext)
         {
+            _actionContext = actionContext;
+        }
+
+        public Task ExecuteAsync(IActionTracingContainer context)
+        {
+            _actionContext.Export(new DummyActionTwoExport());
+
             return Task.CompletedTask;
         }
     }

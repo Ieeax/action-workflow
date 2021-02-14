@@ -3,11 +3,11 @@ using System.Threading.Tasks;
 
 namespace ActionWorkflow.Tests
 {
-    public class DummyActionOne : IAction<IActionTracingContainer>
+    public class DummyActionThree : IAction<IActionTracingContainer>
     {
         private readonly DummyActionTwoExport _dummyActionTwoExport;
 
-        public DummyActionOne(DummyActionTwoExport dummyActionTwoExport)
+        public DummyActionThree(DummyActionTwoExport dummyActionTwoExport)
         {
             _dummyActionTwoExport = dummyActionTwoExport;
         }
