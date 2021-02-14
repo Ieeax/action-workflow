@@ -2,6 +2,8 @@
 A library for creating workflows based on/splited into multiple actions. The project itself is currently based on .NET Standard 2.0.
 
 # Getting Started
+
+## Basic Usage
 A workflow consists of multiple actions which are each represented as their own class and executed for/in a specific context (`T`). To create such an action, the class needs to inherit from the interface `IAction<T>` as shown underneath:
 ```csharp
 public class CustomAction : IAction<ContextObject>
@@ -44,8 +46,58 @@ var context = new ContextObject();
 ActionSequenceExecutionResult result = await sequence.ExecuteAsync(context);
 ```
 
-The library also supports dependency-injection (through constructor), the possibility to export and import results from other actions and with it the dependency on other actions.
-Further documentation will come in the future.
+## Dependency Injection
+Actions can make use of the built-in dependency-injection through their constructor:
+```csharp
+public CustomAction(ISomeService someService)
+{
+    _someService = someService;
+}
+```
+
+To provide your own services, an `IServiceProvider` can be passed when creating a `ActionSequence<T>` from a `ActionSequenceFactory<T>`:
+```csharp
+var sequence = seqFactory.Create(serviceProvider);
+```
+
+> **Note**: There is currently one built-in service, named `IActionContext`. The service is scoped to the current action and provides the ability to access functions (e.g. export of objects) and informations (e.g. name or description) about it.
+
+## Exports/Imports
+As noted above, actions can export objects (using the `IActionContext` service) and also import these from previous actions.
+Here's a simple example of an export:
+```csharp
+public class CustomAction : IAction<ContextObject>
+{
+    private readonly IActionContext _context;
+
+    public CustomAction(IActionContext context)
+    {
+        _context = context;
+    }
+    
+    public Task ExecuteAsync(ContextObject context)
+    {
+        // Export the object
+        _context.Export(new SomeActionExport()
+        {
+            // ...
+        });
+        
+        return Task.CompletedTask;
+    }
+}
+```
+
+Now, to import `SomeActionExport` from another action, we need to specify the import in the constructor and add the `FromImport` attribute before the parameter. This attribute indicates (to the underlying dependency-injection) that we want to import this object from a previous action:
+```csharp
+public AnotherCustomAction([FromImport] SomeActionExport import)
+{
+    // ...
+}
+```
+Imports also introduces the dependency of different actions on each other. Actions without imports will be executed first, then the next ones which are possible with the exports of the last action(s), etc.
+
+> **Note**: Circular dependencies between multiple actions are not supported! If the workflow/action-sequence cannot be fully executed, `ActionSequenceExecutionResult.Partial` is returned.
 
 # Issues
 When encountering any bugs/problems feel free to create an issue.
