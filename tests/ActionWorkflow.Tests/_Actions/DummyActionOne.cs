@@ -7,7 +7,7 @@ namespace ActionWorkflow.Tests
     {
         private readonly DummyActionTwoExport _dummyActionTwoExport;
 
-        public DummyActionOne(DummyActionTwoExport dummyActionTwoExport)
+        public DummyActionOne([FromImport] DummyActionTwoExport dummyActionTwoExport)
         {
             _dummyActionTwoExport = dummyActionTwoExport;
         }

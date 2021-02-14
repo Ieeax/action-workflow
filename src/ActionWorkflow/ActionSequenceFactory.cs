@@ -62,11 +62,9 @@ namespace ActionWorkflow
 
             foreach (var curParameter in parameters)
             {
-                var paramType = curParameter.ParameterType.GetTypeInfo();
-
-                if (paramType.IsDefined(typeof(ActionExportAttribute), false))
+                if (curParameter.IsDefined(typeof(FromImportAttribute), false))
                 {
-                    result.Add(paramType);
+                    result.Add(curParameter.ParameterType);
                 }
             }
 
