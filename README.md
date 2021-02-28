@@ -8,7 +8,7 @@ A workflow consists of multiple actions which are each represented as their own 
 ```csharp
 public class CustomAction : IAction<ContextObject>
 {
-    public Task ExecuteAsync(ContextObject context)
+    public Task ExecuteAsync(ContextObject context, CancellationToken cancellationToken)
     {
         // Implement your logic here
     }
@@ -43,7 +43,7 @@ Finally, to execute the created workflow, we need to call the `ExecuteAsync` met
 var context = new ContextObject();
 
 // Execute the workflow/action-sequence
-ActionSequenceExecutionResult result = await sequence.ExecuteAsync(context);
+ActionSequenceExecutionResult result = await sequence.ExecuteAsync(context, CancellationToken.None);
 ```
 
 ## Dependency Injection
@@ -75,7 +75,7 @@ public class CustomAction : IAction<ContextObject>
         _context = context;
     }
     
-    public Task ExecuteAsync(ContextObject context)
+    public Task ExecuteAsync(ContextObject context, CancellationToken cancellationToken)
     {
         // Export the object
         _context.Export(new SomeActionExport()
