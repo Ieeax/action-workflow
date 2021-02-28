@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ActionWorkflow
@@ -9,10 +10,12 @@ namespace ActionWorkflow
     public class ActionBundle<T>
     {
         private readonly IEnumerable<ActionItem<T>> _items;
+        private readonly CancellationToken _cancellationToken;
 
-        public ActionBundle(IEnumerable<ActionItem<T>> items)
+        public ActionBundle(IEnumerable<ActionItem<T>> items, CancellationToken cancellationToken)
         {
             _items = items ?? throw new ArgumentNullException(nameof(items));
+            _cancellationToken = cancellationToken;
         }
 
         public async Task ExecuteAsync(T context)
@@ -40,7 +43,7 @@ namespace ActionWorkflow
                     {
                         trace?.AddEvent(ActionTraceEvent.Begin, actionIdentifier);
 
-                        await curItem.Action.ExecuteAsync(context);
+                        await curItem.Action.ExecuteAsync(context, _cancellationToken);
 
                         // Add all exports to the global export-provider when the action finished successfully
                         // -> If the action would throw an exception we don't want to add already exported objects to it

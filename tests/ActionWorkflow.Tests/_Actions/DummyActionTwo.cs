@@ -1,4 +1,5 @@
-﻿using ActionWorkflow.Tracing;
+﻿using System.Threading;
+using ActionWorkflow.Tracing;
 using System.Threading.Tasks;
 
 namespace ActionWorkflow.Tests
@@ -12,7 +13,7 @@ namespace ActionWorkflow.Tests
             _actionContext = actionContext;
         }
 
-        public Task ExecuteAsync(IActionTracingContainer context)
+        public Task ExecuteAsync(IActionTracingContainer context, CancellationToken cancellationToken)
         {
             _actionContext.Export(new DummyActionTwoExport());
 

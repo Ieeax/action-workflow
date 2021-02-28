@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ActionWorkflow
@@ -28,7 +29,7 @@ namespace ActionWorkflow
             _exportProvider = exportProvider ?? new ActionExportProvider();
         }
 
-        private ActionBundle<T> GetNextActionBundle()
+        private ActionBundle<T> GetNextActionBundle(CancellationToken cancellationToken)
         {
             List<ActionItem<T>> entries = null;
 
@@ -67,7 +68,7 @@ namespace ActionWorkflow
 
             return entries == null 
                 ? null 
-                : new ActionBundle<T>(entries);
+                : new ActionBundle<T>(entries, cancellationToken);
         }
 
         private ActionItem<T> CreateActionItem(ActionInfo actionInfo)
@@ -82,7 +83,19 @@ namespace ActionWorkflow
                 serviceProvider);
         }
 
-        public async Task<ActionSequenceExecutionResult> ExecuteAsync(T context)
+        /// <summary>
+        /// Executes the sequence for the given <paramref name="context"/>.
+        /// </summary>
+        /// <param name="context">The item for which the sequence is executed.</param>
+        public Task<ActionSequenceExecutionResult> ExecuteAsync(T context)
+            => this.ExecuteAsync(context, CancellationToken.None);
+
+        /// <summary>
+        /// Executes the sequence for the given <paramref name="context"/>.
+        /// </summary>
+        /// <param name="context">The item for which the sequence is executed.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> which indicates whether the sequence should be canceled.</param>
+        public async Task<ActionSequenceExecutionResult> ExecuteAsync(T context, CancellationToken cancellationToken)
         {
             // Check whether the target wants to be able to trace which actions were executed on it
             var trace = context is IActionTracingContainer atc ? atc.ActionTrace : null;
@@ -93,7 +106,7 @@ namespace ActionWorkflow
 
                 while (_actionInfos.Count > 0)
                 {
-                    var actionBundle = this.GetNextActionBundle();
+                    var actionBundle = this.GetNextActionBundle(cancellationToken);
                     if (actionBundle == null)
                     {
                         // Stop the execution because no further actions are possible
