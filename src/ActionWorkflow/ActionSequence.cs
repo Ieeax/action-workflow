@@ -124,6 +124,11 @@ namespace ActionWorkflow
                 trace?.AddEvent(ActionTraceEvent.UnexpectedEnd, this.ToString(), ex);
             }
 
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return ActionSequenceExecutionResult.Canceled;
+            }
+
             return _actionInfos.Count == _actionInfosInitialCount
                 ? ActionSequenceExecutionResult.None
                 : _actionInfos.Count > 0
