@@ -101,5 +101,10 @@ Imports also introduces the dependency of different actions on each other. Actio
 
 > **Note**: Circular dependencies between multiple actions are not supported! If the workflow/action-sequence cannot be fully executed, `ActionSequenceExecutionResult.Partial` is returned.
 
+## Disposal of Actions
+The interfaces `IDisposable` and `IAsyncDisposable` are supported. When implemented in an action, the respective method will be called automatically after execution.
+
+> **Note**: The interface `IAsyncDisposable` is not supported when targeting `netstandard2.0`.
+
 # Issues
 When encountering any bugs/problems feel free to create an issue.

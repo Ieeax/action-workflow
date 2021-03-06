@@ -123,7 +123,7 @@ namespace ActionWorkflow.Tests
         [Fact]
         public void CreateActionInstanceWithOptionalServiceTest()
         {
-            var actionInfo = ActionActivator.GetActionInfo(typeof(ActionWithOptionalServices));
+            var actionInfo = ActionActivator.GetActionInfo(typeof(ActionWithOptionalService));
             var exportProvider = A.Fake<IExportProvider>();
 
             var serviceProvider = A.Fake<IServiceProvider>();
@@ -133,9 +133,9 @@ namespace ActionWorkflow.Tests
             var instance = ActionActivator.CreateInstance(actionInfo, serviceProvider, exportProvider);
         
             Assert.NotNull(instance);
-            Assert.IsType<ActionWithOptionalServices>(instance);
+            Assert.IsType<ActionWithOptionalService>(instance);
 
-            var instance2 = (ActionWithOptionalServices)instance;
+            var instance2 = (ActionWithOptionalService)instance;
 
             Assert.Equal("TEST", instance2.Service1);
             Assert.Equal(-1, instance2.Service2);
@@ -144,7 +144,7 @@ namespace ActionWorkflow.Tests
         [Fact]
         public void CreateActionInstanceWithMissingServiceTest()
         {
-            var actionInfo = ActionActivator.GetActionInfo(typeof(ActionWithOptionalServices));
+            var actionInfo = ActionActivator.GetActionInfo(typeof(ActionWithOptionalService));
             var exportProvider = A.Fake<IExportProvider>();
 
             var serviceProvider = A.Fake<IServiceProvider>();
@@ -223,9 +223,9 @@ namespace ActionWorkflow.Tests
             public int Import3 { get; }
         }
 
-        private class ActionWithOptionalServices : IAction<string>
+        private class ActionWithOptionalService : IAction<string>
         {
-            public ActionWithOptionalServices(
+            public ActionWithOptionalService(
                 string service1,
                 int service2 = -1)
             {

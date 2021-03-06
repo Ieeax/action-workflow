@@ -72,12 +72,13 @@ namespace ActionWorkflow
 
         private ActionItem<T> CreateActionItem(ActionInfo actionInfo)
         {
-            var context = new DefaultActionContext(actionInfo, _exportProvider);
-            var serviceProvider = new DefaultActionServiceProvider(context, _serviceProvider);
+            var actionContext = new DefaultActionContext(actionInfo, _exportProvider);
+            var serviceProvider = new DefaultActionServiceProvider(actionContext, _serviceProvider);
 
             return new ActionItem<T>(
                 (IAction<T>)ActionActivator.CreateInstance(actionInfo, serviceProvider, _exportProvider),
-                context,
+                actionInfo,
+                actionContext,
                 _exportProvider,
                 serviceProvider);
         }
@@ -86,6 +87,7 @@ namespace ActionWorkflow
         /// Executes the sequence for the given <paramref name="context"/>.
         /// </summary>
         /// <param name="context">The item for which the sequence is executed.</param>
+        /// <exception cref="ActionException"></exception>
         public Task<ActionSequenceExecutionResult> ExecuteAsync(T context)
             => this.ExecuteAsync(context, CancellationToken.None);
 
@@ -94,6 +96,7 @@ namespace ActionWorkflow
         /// </summary>
         /// <param name="context">The item for which the sequence is executed.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> which indicates whether the sequence should be canceled.</param>
+        /// <exception cref="ActionException"></exception>
         public async Task<ActionSequenceExecutionResult> ExecuteAsync(T context, CancellationToken cancellationToken)
         {
             // Check whether the target wants to be able to trace which actions were executed on it
@@ -121,6 +124,8 @@ namespace ActionWorkflow
             catch (Exception ex)
             {
                 trace?.AddEvent(ActionTraceEvent.UnexpectedEnd, this.ToString(), ex);
+                
+                if (ex is ActionException) throw;
             }
 
             if (cancellationToken.IsCancellationRequested)

@@ -43,7 +43,31 @@ namespace ActionWorkflow
                     {
                         trace?.AddEvent(ActionTraceEvent.Begin, actionIdentifier);
 
-                        await curItem.Action.ExecuteAsync(context, _cancellationToken);
+                        try
+                        {
+                            await curItem.Action.ExecuteAsync(context, _cancellationToken);
+                        }
+                        finally
+                        {
+                            try
+                            {
+                                if (curItem.Action is IDisposable d)
+                                {
+                                    d.Dispose();
+                                }
+
+#if (NETSTANDARD2_1 || NET)
+                                if (curItem.Action is IAsyncDisposable ad)
+                                {
+                                    await ad.DisposeAsync();
+                                }
+#endif
+                            }
+                            catch (Exception ex)
+                            {
+                                throw new ActionException($"An unexpected exception occured during disposing action of type \"{curItem.Action.GetType().FullName}\".", ex, curItem.ActionInfo);
+                            }
+                        }
 
                         // Add all exports to the global export-provider when the action finished successfully
                         // -> If the action would throw an exception we don't want to add already exported objects to it
@@ -60,6 +84,8 @@ namespace ActionWorkflow
                     catch (Exception ex)
                     {
                         trace?.AddEvent(ActionTraceEvent.UnexpectedEnd, actionIdentifier, ex);
+
+                        if (ex is ActionException) throw;
                     }
                 }
 
@@ -68,6 +94,8 @@ namespace ActionWorkflow
             catch (Exception ex)
             {
                 trace?.AddEvent(ActionTraceEvent.UnexpectedEnd, this.ToString(), ex);
+
+                if (ex is ActionException) throw;
             }
         }
 
