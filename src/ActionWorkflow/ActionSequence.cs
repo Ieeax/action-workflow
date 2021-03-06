@@ -1,5 +1,4 @@
 ﻿using ActionWorkflow.Tracing;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -37,12 +36,12 @@ namespace ActionWorkflow
             {
                 var curActionInfo = _actionInfos[i];
 
-                if (curActionInfo.TypesToImport.Count > 0)
+                if (curActionInfo.Imports.Count > 0)
                 {
                     bool continueLoop = false;
-                    foreach (var curImportType in curActionInfo.TypesToImport)
+                    foreach (var curImport in curActionInfo.Imports)
                     {
-                        if (!_exportProvider.ContainsExport(curImportType))
+                        if (!_exportProvider.ContainsExport(curImport.Type, curImport.Name))
                         {
                             continueLoop = true;
                             break;
@@ -73,11 +72,11 @@ namespace ActionWorkflow
 
         private ActionItem<T> CreateActionItem(ActionInfo actionInfo)
         {
-            var context = new DefaultActionContext(_exportProvider, actionInfo);
-            var serviceProvider = new DefaultActionServiceProvider(context, _exportProvider, _serviceProvider);
+            var context = new DefaultActionContext(actionInfo, _exportProvider);
+            var serviceProvider = new DefaultActionServiceProvider(context, _serviceProvider);
 
             return new ActionItem<T>(
-                (IAction<T>)ActivatorUtilities.CreateInstance(serviceProvider, actionInfo.ActionType),
+                (IAction<T>)ActionActivator.CreateInstance(actionInfo, serviceProvider, _exportProvider),
                 context,
                 _exportProvider,
                 serviceProvider);

@@ -47,11 +47,11 @@ namespace ActionWorkflow
 
                         // Add all exports to the global export-provider when the action finished successfully
                         // -> If the action would throw an exception we don't want to add already exported objects to it
-                        foreach (var curExport in curItem.ActionContext.Exports)
+                        foreach (var curExport in curItem.ActionContext.ExportProvider)
                         {
-                            if (!curItem.ExportProvider.TryExport(curExport.Key, curExport.Value))
+                            if (!curItem.ExportProvider.TryExport(curExport.Type, curExport.Name, curExport.Value))
                             {
-                                throw new InvalidOperationException($"An object of type \"{curExport.Key.FullName}\" was already exported. Each type can only be exported once.");
+                                throw new InvalidOperationException($"An object of type \"{curExport.Type.FullName}\" with name \"{curExport.Name}\" was already exported.");
                             }
                         }
 

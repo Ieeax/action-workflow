@@ -2,12 +2,8 @@
 
 namespace ActionWorkflow
 {
-    public interface IExportProvider
+    public interface IExportProvider : IReadOnlyExportProvider
     {
-        bool TryExport(Type exportType, object value);
-
-        bool ContainsExport(Type exportType);
-
-        object GetExport(Type exportType);
+        bool TryExport(Type exportType, string name, object value);
     }
 }

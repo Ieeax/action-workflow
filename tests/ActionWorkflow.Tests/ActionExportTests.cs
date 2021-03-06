@@ -20,7 +20,7 @@ namespace ActionWorkflow.Tests
             var result = await sequence.ExecuteAsync(null);
 
             Assert.Equal(ActionSequenceExecutionResult.Full, result);
-            Assert.NotNull(exportProvider.GetExport(typeof(DummyActionTwoExport)));
+            Assert.NotNull(exportProvider.GetExport(typeof(DummyActionTwoExport), null));
         }
     }
 }

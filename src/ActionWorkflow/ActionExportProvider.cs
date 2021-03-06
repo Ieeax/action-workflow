@@ -1,19 +1,86 @@
 ﻿using System;
-using System.Collections.Concurrent;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace ActionWorkflow
 {
     public class ActionExportProvider : IExportProvider
     {
-        private readonly ConcurrentDictionary<Type, object> _exports = new ConcurrentDictionary<Type, object>();
+        public const string DefaultExportName = "__DEFAULT_EXPORT";
 
-        public bool TryExport(Type exportType, object value)
-            => _exports.TryAdd(exportType, value);
+        private readonly Dictionary<Type, Dictionary<string, object>> _exports = new Dictionary<Type, Dictionary<string, object>>();
+        private readonly object _exportsLock = new object();
 
-        public bool ContainsExport(Type exportType)
-            => _exports.ContainsKey(exportType);
+        public bool TryExport(Type exportType, string name, object value)
+        {
+            if (value == null)
+            {
+                return false;
+            }
 
-        public object GetExport(Type exportType)
-            => _exports.TryGetValue(exportType, out var export) ? export : null;
+            name = name ?? DefaultExportName;
+
+            lock (_exportsLock)
+            {
+                if (!_exports.TryGetValue(exportType, out var exports))
+                {
+                    exports = new Dictionary<string, object>();
+                    _exports.Add(exportType, exports);
+                }
+                else if (exports.ContainsKey(name))
+                {
+                    return false;
+                }
+
+                exports.Add(name, value);
+                return true;
+            }
+        }
+
+        public bool ContainsExport(Type exportType, string name)
+        {
+            name = name ?? DefaultExportName;
+
+            lock (_exportsLock)
+            {
+                return _exports.TryGetValue(exportType, out var exports) 
+                    && exports.ContainsKey(name);
+            }
+        }
+
+        public object GetExport(Type exportType, string name)
+        {
+            name = name ?? DefaultExportName;
+            
+            lock (_exportsLock)
+            {
+                if (_exports.TryGetValue(exportType, out var exports)
+                    && exports.TryGetValue(name, out var value))
+                {
+                    return value;
+                }
+            }
+
+            return null;
+        }
+
+        public IEnumerator<ActionExport> GetEnumerator()
+        {
+            lock (_exportsLock)
+            {
+                foreach (var curItem in _exports)
+                {
+                    foreach (var curExport in curItem.Value)
+                    {
+                        yield return new ActionExport(
+                            curItem.Key, 
+                            curExport.Key == DefaultExportName ? null : curExport.Key, 
+                            curExport.Value);
+                    }
+                }
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
     }
 }

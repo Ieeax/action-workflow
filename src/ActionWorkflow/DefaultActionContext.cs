@@ -5,17 +5,21 @@ namespace ActionWorkflow
 {
     public class DefaultActionContext : IActionContext
     {
-        private readonly Dictionary<Type, object> _exports = new Dictionary<Type, object>();
+        private readonly IExportProvider _temporaryExportProvider;
         private readonly IExportProvider _globalExportProvider;
         private readonly ActionInfo _actionInfo;
 
-        public DefaultActionContext(IExportProvider globalExportProvider, ActionInfo actionInfo)
+        public DefaultActionContext(ActionInfo actionInfo, IExportProvider globalExportProvider)
         {
-            _globalExportProvider = globalExportProvider ?? throw new ArgumentNullException(nameof(globalExportProvider));
             _actionInfo = actionInfo ?? throw new ArgumentNullException(nameof(actionInfo));
+            _globalExportProvider = globalExportProvider ?? throw new ArgumentNullException(nameof(globalExportProvider));
+            _temporaryExportProvider = new ActionExportProvider();
         }
-
+        
         public void Export(object value)
+            => this.Export(value, null);
+
+        public void Export(object value, string name)
         {
             if (value == null)
             {
@@ -24,16 +28,17 @@ namespace ActionWorkflow
 
             var type = value.GetType();
 
-            if (_globalExportProvider.ContainsExport(type)
-                || _exports.ContainsKey(type))
+            if (_globalExportProvider.ContainsExport(type, name)
+                || !_temporaryExportProvider.TryExport(type, name, value))
             {
-                throw new InvalidOperationException($"An object of type \"{type.FullName}\" was already exported. Each type can only be exported once.");
+                throw new InvalidOperationException($"An object of type \"{type.FullName}\" with name \"{name}\" was already exported.");
             }
-
-            _exports.Add(type, value);
         }
 
         public void Export<T>(T value)
+            => this.Export<T>(value, null);
+
+        public void Export<T>(T value, string name)
         {
             if (value == null)
             {
@@ -42,19 +47,17 @@ namespace ActionWorkflow
 
             var type = typeof(T);
 
-            if (_globalExportProvider.ContainsExport(type)
-                || _exports.ContainsKey(type))
+            if (_globalExportProvider.ContainsExport(type, name)
+                || !_temporaryExportProvider.TryExport(type, name, value))
             {
-                throw new InvalidOperationException($"An object of type \"{type.FullName}\" was already exported. Each type can only be exported once.");
+                throw new InvalidOperationException($"An object of type \"{type.FullName}\" with name \"{name}\" was already exported.");
             }
-
-            _exports.Add(type, value);
         }
 
         public string Name => _actionInfo.Name;
 
         public string Description => _actionInfo.Description;
 
-        public IReadOnlyDictionary<Type, object> Exports => _exports;
+        public IReadOnlyExportProvider ExportProvider => _temporaryExportProvider;
     }
 }
