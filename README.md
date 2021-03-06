@@ -64,7 +64,7 @@ var sequence = seqFactory.Create(serviceProvider);
 
 ## Exports/Imports
 As noted above, actions can export objects (using the `IActionContext` service) and also import these from previous actions.
-Here's a simple example of an export:
+Here's a simple example of the two types of exports:
 ```csharp
 public class CustomAction : IAction<ContextObject>
 {
@@ -77,11 +77,13 @@ public class CustomAction : IAction<ContextObject>
     
     public Task ExecuteAsync(ContextObject context, CancellationToken cancellationToken)
     {
-        // Export the object
-        _context.Export(new SomeActionExport()
-        {
-            // ...
-        });
+        // Export the object as default export (= without name)
+        // -> Each type can only be exported once as default export
+        _context.Export(new SomeActionExport(/* ... */));
+
+        // Export the object as named export
+        // -> Combination of type and name has to be unique
+        _context.Export(new SomeActionExport(/* ... */), "ExportWithName");
         
         return Task.CompletedTask;
     }
@@ -90,7 +92,7 @@ public class CustomAction : IAction<ContextObject>
 
 Now, to import `SomeActionExport` from another action, we need to specify the import in the constructor and add the `FromImport` attribute before the parameter. This attribute indicates (to the underlying dependency-injection) that we want to import this object from a previous action:
 ```csharp
-public AnotherCustomAction([FromImport] SomeActionExport import)
+public AnotherCustomAction([FromImport] SomeActionExport import, [FromImport("ExportWithName")] SomeActionExport namedImport)
 {
     // ...
 }
