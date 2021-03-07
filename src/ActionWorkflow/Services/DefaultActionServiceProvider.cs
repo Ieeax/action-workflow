@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ActionWorkflow
+namespace ActionWorkflow.Services
 {
     public class DefaultActionServiceProvider : IServiceProvider
     {

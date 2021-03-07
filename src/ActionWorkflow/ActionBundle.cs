@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ActionWorkflow
 {
-    public class ActionBundle<T>
+    internal class ActionBundle<T>
     {
         private readonly IEnumerable<ActionItem<T>> _items;
         private readonly CancellationToken _cancellationToken;

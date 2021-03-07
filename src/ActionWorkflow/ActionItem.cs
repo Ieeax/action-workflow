@@ -2,7 +2,7 @@
 
 namespace ActionWorkflow
 {
-    public class ActionItem<T>
+    internal class ActionItem<T>
     {
         public ActionItem(ActionInfo actionInfo, IActionContext actionContext, IExportProvider exportProvider, IServiceProvider serviceProvider)
         {

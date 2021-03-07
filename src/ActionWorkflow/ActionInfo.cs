@@ -6,14 +6,14 @@ namespace ActionWorkflow
 {
     public class ActionInfo
     {
-        private readonly List<ActionImport> _imports;
+        private readonly List<ActionImportInfo> _imports;
 
-        internal ActionInfo(Type actionType, ConstructorInfo constructor, List<ActionImport> imports)
+        internal ActionInfo(Type actionType, ConstructorInfo constructor, List<ActionImportInfo> imports)
             : this(actionType, null, null, constructor, imports)
         {
         }
 
-        internal ActionInfo(Type actionType, string friendlyName, string description, ConstructorInfo constructor, List<ActionImport> imports)
+        internal ActionInfo(Type actionType, string friendlyName, string description, ConstructorInfo constructor, List<ActionImportInfo> imports)
         {
             ActionType = actionType ?? throw new ArgumentNullException(nameof(actionType));
             Name = friendlyName ?? actionType.Name;
@@ -58,6 +58,6 @@ namespace ActionWorkflow
         /// <summary>
         /// Gets the collection of required imports for the action.
         /// </summary>
-        public IReadOnlyCollection<ActionImport> Imports => _imports;
+        public IReadOnlyCollection<ActionImportInfo> Imports => _imports;
     }
 }

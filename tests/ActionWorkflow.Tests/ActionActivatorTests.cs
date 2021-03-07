@@ -154,7 +154,7 @@ namespace ActionWorkflow.Tests
                 () => ActionActivator.CreateInstance(actionInfo, serviceProvider, exportProvider));
         }
 
-        private void AssertImport(Type expectedType, string expectedName, ActionImport actualImport)
+        private void AssertImport(Type expectedType, string expectedName, ActionImportInfo actualImport)
         {
             Assert.NotNull(actualImport);
             Assert.Equal(expectedType, actualImport.Type);

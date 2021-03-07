@@ -2,9 +2,9 @@ using System;
 
 namespace ActionWorkflow
 {
-    public class ActionImport
+    public class ActionImportInfo
     {
-        public ActionImport(Type type, string name, int constructorIndex)
+        public ActionImportInfo(Type type, string name, int constructorIndex)
         {
             this.Type = type ?? throw new ArgumentNullException(nameof(type));
             this.Name = name;

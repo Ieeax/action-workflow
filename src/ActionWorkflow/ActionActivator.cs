@@ -143,9 +143,9 @@ namespace ActionWorkflow
             return constructor != null;
         }
 
-        private static List<ActionImport> GetActionImportsFromConstructor(ConstructorInfo constructor)
+        private static List<ActionImportInfo> GetActionImportsFromConstructor(ConstructorInfo constructor)
         {
-            var result = new List<ActionImport>();
+            var result = new List<ActionImportInfo>();
             var parameters = constructor.GetParameters();
 
             int parameterIndex = 0;
@@ -156,7 +156,7 @@ namespace ActionWorkflow
                     var attribute = curParameter.GetCustomAttribute<FromImportAttribute>(false);
 
                     result.Add(
-                        new ActionImport(curParameter.ParameterType, attribute.Name, parameterIndex));
+                        new ActionImportInfo(curParameter.ParameterType, attribute.Name, parameterIndex));
                 }
 
                 parameterIndex++;
