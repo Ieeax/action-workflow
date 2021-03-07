@@ -10,6 +10,12 @@ namespace ActionWorkflow
 
         private readonly Dictionary<Type, Dictionary<string, object>> _exports = new Dictionary<Type, Dictionary<string, object>>();
         private readonly object _exportsLock = new object();
+        private readonly bool _allowReexport;
+
+        public ActionExportProvider(bool allowReexport = false)
+        {
+            _allowReexport = allowReexport;
+        }
 
         public bool TryExport(Type exportType, string name, object value)
         {
@@ -27,12 +33,12 @@ namespace ActionWorkflow
                     exports = new Dictionary<string, object>();
                     _exports.Add(exportType, exports);
                 }
-                else if (exports.ContainsKey(name))
+                else if (!_allowReexport && exports.ContainsKey(name))
                 {
                     return false;
                 }
 
-                exports.Add(name, value);
+                exports[name] = value;
                 return true;
             }
         }

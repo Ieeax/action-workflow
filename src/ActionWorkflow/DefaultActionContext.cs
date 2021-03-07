@@ -13,7 +13,7 @@ namespace ActionWorkflow
         {
             _actionInfo = actionInfo ?? throw new ArgumentNullException(nameof(actionInfo));
             _globalExportProvider = globalExportProvider ?? throw new ArgumentNullException(nameof(globalExportProvider));
-            _temporaryExportProvider = new ActionExportProvider();
+            _temporaryExportProvider = new ActionExportProvider(true);
         }
         
         public void Export(object value)
