@@ -61,8 +61,7 @@ namespace ActionWorkflow
                     entries = new List<ActionItem<T>>();
                 }
 
-                entries.Add(
-                    this.CreateActionItem(curActionInfo));
+                entries.Add(CreateActionItem(curActionInfo));
 
                 _actionInfos.RemoveAt(i--);
             }
@@ -78,7 +77,6 @@ namespace ActionWorkflow
             var serviceProvider = new DefaultActionServiceProvider(actionContext, _serviceProvider);
 
             return new ActionItem<T>(
-                (IAction<T>)ActionActivator.CreateInstance(actionInfo, serviceProvider, _exportProvider),
                 actionInfo,
                 actionContext,
                 _exportProvider,
@@ -91,7 +89,7 @@ namespace ActionWorkflow
         /// <param name="context">The item for which the sequence is executed.</param>
         /// <exception cref="ActionException"></exception>
         public Task<ActionSequenceExecutionResult> ExecuteAsync(T context)
-            => this.ExecuteAsync(context, CancellationToken.None);
+            => ExecuteAsync(context, CancellationToken.None);
 
         /// <summary>
         /// Executes the sequence for the given <paramref name="context"/>.
@@ -106,11 +104,11 @@ namespace ActionWorkflow
 
             try
             {
-                trace?.AddEvent(ActionTraceEvent.Begin, this.ToString());
+                trace?.AddEvent(ActionTraceEvent.Begin, ToString());
 
                 while (_actionInfos.Count > 0)
                 {
-                    var actionBundle = this.GetNextActionBundle(cancellationToken);
+                    var actionBundle = GetNextActionBundle(cancellationToken);
                     if (actionBundle == null)
                     {
                         // Stop the execution because no further actions are possible
@@ -121,11 +119,11 @@ namespace ActionWorkflow
                     await actionBundle.ExecuteAsync(context);
                 }
 
-                trace?.AddEvent(ActionTraceEvent.End, this.ToString());
+                trace?.AddEvent(ActionTraceEvent.End, ToString());
             }
             catch (Exception ex)
             {
-                trace?.AddEvent(ActionTraceEvent.UnexpectedEnd, this.ToString(), ex);
+                trace?.AddEvent(ActionTraceEvent.UnexpectedEnd, ToString(), ex);
                 
                 if (ex is ActionException) throw;
             }

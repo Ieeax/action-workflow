@@ -43,21 +43,28 @@ namespace ActionWorkflow
                     {
                         trace?.AddEvent(ActionTraceEvent.Begin, actionIdentifier);
 
+                        IAction<T> instance = null;
                         try
                         {
-                            await curItem.Action.ExecuteAsync(context, _cancellationToken);
+                            // Create the actual instance of the action
+                            instance = (IAction<T>)ActionActivator.CreateInstance(
+                                curItem.ActionInfo, 
+                                curItem.ServiceProvider, 
+                                curItem.ExportProvider);
+
+                            await instance.ExecuteAsync(context, _cancellationToken);
                         }
                         finally
                         {
                             try
                             {
-                                if (curItem.Action is IDisposable d)
+                                if (instance is IDisposable d)
                                 {
                                     d.Dispose();
                                 }
 
 #if (NETSTANDARD2_1 || NET)
-                                if (curItem.Action is IAsyncDisposable ad)
+                                if (instance is IAsyncDisposable ad)
                                 {
                                     await ad.DisposeAsync();
                                 }
@@ -65,7 +72,7 @@ namespace ActionWorkflow
                             }
                             catch (Exception ex)
                             {
-                                throw new ActionException($"An unexpected exception occured during disposing action of type \"{curItem.Action.GetType().FullName}\".", ex, curItem.ActionInfo);
+                                throw new ActionException($"An unexpected exception occured during disposing action of type \"{instance.GetType().FullName}\".", ex, curItem.ActionInfo);
                             }
                         }
 
