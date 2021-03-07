@@ -8,12 +8,12 @@ namespace ActionWorkflow
     {
         private readonly List<ActionImport> _imports;
 
-        public ActionInfo(Type actionType, ConstructorInfo constructor, List<ActionImport> typesToImport)
-            : this(actionType, null, null, constructor, typesToImport)
+        internal ActionInfo(Type actionType, ConstructorInfo constructor, List<ActionImport> imports)
+            : this(actionType, null, null, constructor, imports)
         {
         }
 
-        public ActionInfo(Type actionType, string friendlyName, string description, ConstructorInfo constructor, List<ActionImport> imports)
+        internal ActionInfo(Type actionType, string friendlyName, string description, ConstructorInfo constructor, List<ActionImport> imports)
         {
             ActionType = actionType ?? throw new ArgumentNullException(nameof(actionType));
             Name = friendlyName ?? actionType.Name;

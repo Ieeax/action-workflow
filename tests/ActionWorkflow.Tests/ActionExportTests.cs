@@ -9,13 +9,12 @@ namespace ActionWorkflow.Tests
         [Fact]
         public async Task ActionSimpleExportTest()
         {
-            var builder = new ActionSequenceFactoryBuilder<IActionTracingContainer>();
-            builder.AddAction<DummyActionTwo>();
-            builder.AddAction<DummyActionOne>();
+            var collection = new ActionCollection<IActionTracingContainer>();
+            collection.AddAction<DummyActionTwo>();
+            collection.AddAction<DummyActionOne>();
 
             var exportProvider = new ActionExportProvider();
-            var sequenceFactory = builder.ToFactory();
-            var sequence = sequenceFactory.Create(exportProvider);
+            var sequence = new ActionSequence<IActionTracingContainer>(collection, exportProvider);
 
             var result = await sequence.ExecuteAsync(null);
 

@@ -14,15 +14,17 @@ namespace ActionWorkflow
         private readonly IServiceProvider _serviceProvider;
         private readonly IExportProvider _exportProvider;
 
-        public ActionSequence(IList<ActionInfo> actionInfos, IExportProvider exportProvider = null)
+        public ActionSequence(IEnumerable<ActionInfo> actionInfos, IExportProvider exportProvider = null)
             : this(actionInfos, null, exportProvider)
         {
         }
 
-        public ActionSequence(IList<ActionInfo> actionInfos, IServiceProvider serviceProvider, IExportProvider exportProvider = null)
+        public ActionSequence(IEnumerable<ActionInfo> actionInfos, IServiceProvider serviceProvider, IExportProvider exportProvider = null)
         {
-            _actionInfos = actionInfos ?? throw new ArgumentNullException(nameof(actionInfos));
-            _actionInfosInitialCount = actionInfos.Count;
+            if (actionInfos == null) throw new ArgumentNullException(nameof(actionInfos));
+
+            _actionInfos = new List<ActionInfo>(actionInfos);
+            _actionInfosInitialCount = _actionInfos.Count;
 
             _serviceProvider = serviceProvider;
             _exportProvider = exportProvider ?? new ActionExportProvider();

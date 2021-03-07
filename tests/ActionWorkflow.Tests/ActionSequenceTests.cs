@@ -30,12 +30,11 @@ namespace ActionWorkflow.Tests
         [Fact]
         public async Task ActionSequenceFullExecutionTest()
         {
-            var builder = new ActionSequenceFactoryBuilder<IActionTracingContainer>();
-            builder.AddAction<DummyActionTwo>();
-            builder.AddAction<DummyActionOne>();
+            var collection = new ActionCollection<IActionTracingContainer>();
+            collection.AddAction<DummyActionTwo>();
+            collection.AddAction<DummyActionOne>();
 
-            var sequenceFactory = builder.ToFactory();
-            var sequence = sequenceFactory.Create();
+            var sequence = new ActionSequence<IActionTracingContainer>(collection);
 
             var container = this.GetMockedTracingContainer();
             var result = await sequence.ExecuteAsync(container);
@@ -56,12 +55,11 @@ namespace ActionWorkflow.Tests
         [Fact]
         public async Task ActionSequencePartialExecutionTest()
         {
-            var builder = new ActionSequenceFactoryBuilder<IActionTracingContainer>();
-            builder.AddAction<DummyActionTwo>();
-            builder.AddAction<DummyActionFour>();
+            var collection = new ActionCollection<IActionTracingContainer>();
+            collection.AddAction<DummyActionTwo>();
+            collection.AddAction<DummyActionFour>();
 
-            var sequenceFactory = builder.ToFactory();
-            var sequence = sequenceFactory.Create();
+            var sequence = new ActionSequence<IActionTracingContainer>(collection);
 
             var container = this.GetMockedTracingContainer();
             var result = await sequence.ExecuteAsync(container);
@@ -78,12 +76,11 @@ namespace ActionWorkflow.Tests
         [Fact]
         public async Task ActionSequenceNoneExecutionTest()
         {
-            var builder = new ActionSequenceFactoryBuilder<IActionTracingContainer>();
-            builder.AddAction<DummyActionThree>();
-            builder.AddAction<DummyActionOne>();
+            var collection = new ActionCollection<IActionTracingContainer>();
+            collection.AddAction<DummyActionThree>();
+            collection.AddAction<DummyActionOne>();
 
-            var sequenceFactory = builder.ToFactory();
-            var sequence = sequenceFactory.Create();
+            var sequence = new ActionSequence<IActionTracingContainer>(collection);
 
             var container = this.GetMockedTracingContainer();
             var result = await sequence.ExecuteAsync(container);
@@ -96,10 +93,10 @@ namespace ActionWorkflow.Tests
         [Fact]
         public async Task ThrowsForActionExceptionTest()
         {
-            var exportProvider = A.Fake<IExportProvider>();
+            var collection = new ActionCollection<IActionTracingContainer>();
+            collection.AddAction<ActionWhichThrowsActionException>();
 
-            var sequenceFactory = ActionSequenceFactory<IActionTracingContainer>.CreateFactory(new List<Type>() { typeof(ActionWhichThrowsActionException) });
-            var sequence = sequenceFactory.Create(exportProvider);
+            var sequence = new ActionSequence<IActionTracingContainer>(collection);
 
             var container = this.GetMockedTracingContainer();
             var exception = await Assert.ThrowsAsync<ActionException>(
@@ -118,10 +115,10 @@ namespace ActionWorkflow.Tests
         [Fact]
         public async Task ThrowsForExceptionWhileDiposeTest()
         {
-            var exportProvider = A.Fake<IExportProvider>();
+            var collection = new ActionCollection<IActionTracingContainer>();
+            collection.AddAction<ActionWhichThrowsWhileDispose>();
 
-            var sequenceFactory = ActionSequenceFactory<IActionTracingContainer>.CreateFactory(new List<Type>() { typeof(ActionWhichThrowsWhileDispose) });
-            var sequence = sequenceFactory.Create(exportProvider);
+            var sequence = new ActionSequence<IActionTracingContainer>(collection);
 
             var container = this.GetMockedTracingContainer();
             var exception = await Assert.ThrowsAsync<ActionException>(
@@ -142,7 +139,7 @@ namespace ActionWorkflow.Tests
         #region Test classes
         private class ActionWhichThrowsActionException : IAction<IActionTracingContainer>
         {
-            public Task ExecuteAsync(IActionTracingContainer context, CancellationToken cancellationToken) => throw new ActionException("TEST", A.Fake<ActionInfo>());
+            public Task ExecuteAsync(IActionTracingContainer context, CancellationToken cancellationToken) => throw new ActionException("TEST");
         }
         
         private class ActionWhichThrowsWhileDispose : IAction<IActionTracingContainer>, IDisposable

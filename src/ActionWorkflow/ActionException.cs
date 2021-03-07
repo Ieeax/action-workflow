@@ -4,6 +4,11 @@ namespace ActionWorkflow
 {
     public class ActionException : Exception
     {
+        public ActionException(string message)
+            : this(message, null, null)
+        {
+        }
+
         public ActionException(string message, ActionInfo actionInfo)
             : this(message, null, actionInfo)
         {
@@ -12,7 +17,7 @@ namespace ActionWorkflow
         public ActionException(string message, Exception innerException, ActionInfo actionInfo)
             : base(message, innerException)
         {
-            ActionInfo = actionInfo ?? throw new ArgumentNullException(nameof(actionInfo));
+            ActionInfo = actionInfo;
         }
 
         /// <summary>

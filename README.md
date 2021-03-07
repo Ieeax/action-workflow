@@ -15,26 +15,16 @@ public class CustomAction : IAction<ContextObject>
 }
 ```
 
-To associate different actions with each other, we then need to create an `ActionSequenceFactory<T>` and pass all types of the actions for our workflow:
+In the next step we need to define which actions we want to execute in our workflow. We do this by adding these actions to a new instance of `ActionCollection<T>`:
 ```csharp
-var seqFactory = ActionSequenceFactory<ContextObject>.CreateFactory(
-    new List<Type>()
-    {
-        typeof(CustomAction),
-        // ...
-    })
-
-// We can also use the corresponding builder to create the factory
-var builder = new ActionSequenceFactoryBuilder<ContextObject>();
-builder.AddAction<CustomAction>();
-// ...
-
-seqFactory = builder.ToFactory();
+var actions = new ActionCollection<ContextObject>();
+actions.AddAction<CustomAction>(); // Add our "CustomAction" to the collection
+actions.AddAction<CustomAction2>();
 ```
 
-This factory allows us to create as many instances of your workflow as we wish, completely independent from each other:
+Once the `ActionCollection<T>` is defined, we can create one or multiple (independent) workflows/sequences by passing it to a new instance of `ActionSequence<T>`:
 ```csharp
-var sequence = seqFactory.Create();
+var sequence = new ActionSequence<ContextObject>(actions);
 ```
 
 Finally, to execute the created workflow, we need to call the `ExecuteAsync` method on it:
@@ -55,12 +45,12 @@ public CustomAction(ISomeService someService)
 }
 ```
 
-To provide your own services, an `IServiceProvider` can be passed when creating a `ActionSequence<T>` from a `ActionSequenceFactory<T>`:
+To provide your own services, an `IServiceProvider` can be passed when creating a new instance of `ActionSequence<T>`:
 ```csharp
-var sequence = seqFactory.Create(serviceProvider);
+var sequence = new ActionSequence<ContextObject>(actions, serviceProvider);
 ```
 
-> **Note**: There is currently one built-in service, named `IActionContext`. The service is scoped to the current action and provides the ability to access functions (e.g. export of objects) and informations (e.g. name or description) about it.
+> **Note**: There is currently one built-in service, named `IActionContext`. The service is scoped to the current action and provides the ability to access functions (e.g. export of objects) and informations (e.g. name or description) about the action.
 
 ## Exports/Imports
 As noted above, actions can export objects (using the `IActionContext` service) and also import these from previous actions.
@@ -103,6 +93,8 @@ Imports also introduces the dependency of different actions on each other. Actio
 
 ## Disposal of Actions
 The interfaces `IDisposable` and `IAsyncDisposable` are supported. When implemented in an action, the respective method will be called automatically after execution.
+
+> **Important**: Never throw an exception while disposing, else the complete workflow/sequence will fail and throw an `ActionException`.
 
 > **Note**: The interface `IAsyncDisposable` is not supported when targeting `netstandard2.0`.
 
