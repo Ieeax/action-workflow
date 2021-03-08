@@ -81,6 +81,8 @@ namespace ActionWorkflow
         /// <param name="actionInfo">The related action-info of the action to create.</param>
         /// <param name="serviceProvider">The service-provider used for dependency-injection.</param>
         /// <param name="exportProvider">The export-provider used for dependency-injection.</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         public static object CreateInstance(ActionInfo actionInfo, IServiceProvider serviceProvider, IExportProvider exportProvider)
         {
             if (actionInfo == null) throw new ArgumentNullException(nameof(actionInfo));
