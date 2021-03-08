@@ -6,10 +6,10 @@ namespace ActionWorkflow
     {
         public ActionItem(ActionInfo actionInfo, IActionContext actionContext, IExportProvider exportProvider, IServiceProvider serviceProvider)
         {
-            this.ActionInfo = actionInfo ?? throw new ArgumentNullException(nameof(actionInfo));
-            this.ActionContext = actionContext ?? throw new ArgumentNullException(nameof(actionContext));
-            this.ExportProvider = exportProvider ?? throw new ArgumentNullException(nameof(exportProvider));
-            this.ServiceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+            ActionInfo = actionInfo ?? throw new ArgumentNullException(nameof(actionInfo));
+            ActionContext = actionContext ?? throw new ArgumentNullException(nameof(actionContext));
+            ExportProvider = exportProvider ?? throw new ArgumentNullException(nameof(exportProvider));
+            ServiceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
         public ActionInfo ActionInfo { get; }

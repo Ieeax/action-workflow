@@ -16,7 +16,7 @@ namespace ActionWorkflow.Services
         }
         
         public void Export(object value)
-            => this.Export(value, null);
+            => Export(value, null);
 
         public void Export(object value, string name)
         {
@@ -35,7 +35,7 @@ namespace ActionWorkflow.Services
         }
 
         public void Export<T>(T value)
-            => this.Export<T>(value, null);
+            => Export<T>(value, null);
 
         public void Export<T>(T value, string name)
         {

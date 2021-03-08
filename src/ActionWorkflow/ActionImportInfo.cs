@@ -6,15 +6,15 @@ namespace ActionWorkflow
     {
         public ActionImportInfo(Type type, string name, int constructorIndex)
         {
-            this.Type = type ?? throw new ArgumentNullException(nameof(type));
-            this.Name = name;
+            Type = type ?? throw new ArgumentNullException(nameof(type));
+            Name = name;
 
             if (constructorIndex < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(constructorIndex));
             }
 
-            this.ConstructorIndex = constructorIndex;
+            ConstructorIndex = constructorIndex;
         }
 
         /// <summary>

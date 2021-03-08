@@ -11,7 +11,7 @@ namespace ActionWorkflow
 
         public FromImportAttribute(string name)
         {
-            this.Name = name;
+            Name = name;
         }
 
         public string Name { get; set; }

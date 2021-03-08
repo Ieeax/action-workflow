@@ -6,9 +6,9 @@ namespace ActionWorkflow
     {
         public ActionExport(Type type, string name, object value)
         {
-            this.Type = type ?? throw new ArgumentNullException(nameof(type));
-            this.Name = name;
-            this.Value = value;
+            Type = type ?? throw new ArgumentNullException(nameof(type));
+            Name = name;
+            Value = value;
         }
 
         /// <summary>
@@ -29,6 +29,6 @@ namespace ActionWorkflow
         /// <summary>
         /// Gets whether this is a default export.
         /// </summary>
-        public bool IsDefault => this.Name == null;
+        public bool IsDefault => Name == null;
     }
 }

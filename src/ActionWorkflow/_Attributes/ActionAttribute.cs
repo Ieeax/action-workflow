@@ -11,8 +11,8 @@ namespace ActionWorkflow
 
         public ActionAttribute(string friendlyName, string description)
         {
-            this.FriendlyName = friendlyName;
-            this.Description = description;
+            FriendlyName = friendlyName;
+            Description = description;
         }
 
         public string FriendlyName { get; set; }

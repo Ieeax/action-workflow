@@ -25,7 +25,7 @@ namespace ActionWorkflow
 
             try
             {
-                trace?.AddEvent(ActionTraceEvent.Begin, this.ToString());
+                trace?.AddEvent(ActionTraceEvent.Begin, ToString());
 
                 foreach (var curItem in _items)
                 {
@@ -96,11 +96,11 @@ namespace ActionWorkflow
                     }
                 }
 
-                trace?.AddEvent(ActionTraceEvent.End, this.ToString());
+                trace?.AddEvent(ActionTraceEvent.End, ToString());
             }
             catch (Exception ex)
             {
-                trace?.AddEvent(ActionTraceEvent.UnexpectedEnd, this.ToString(), ex);
+                trace?.AddEvent(ActionTraceEvent.UnexpectedEnd, ToString(), ex);
 
                 if (ex is ActionException) throw;
             }

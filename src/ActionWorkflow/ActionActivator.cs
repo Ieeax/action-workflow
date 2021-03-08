@@ -11,6 +11,12 @@ namespace ActionWorkflow
         private static readonly Dictionary<Type, ActionInfo> _cachedActionInfos = new Dictionary<Type, ActionInfo>();
         private static readonly object _cachedActionInfosLock = new object();
 
+        /// <summary>
+        /// Gets infos about the action with the given type.
+        /// </summary>
+        /// <param name="actionType">The type of the action. Must inherit from <see cref="IAction{}"/> and not be abstract nor an interface.</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         public static ActionInfo GetActionInfo(Type actionType)
         {
             if (actionType == null)
@@ -68,6 +74,13 @@ namespace ActionWorkflow
             }
         }
 
+        /// <summary>
+        /// Creates an instance of the action related to the given <see cref="ActionInfo"/>.
+        /// Required services and imports will be taken from the given <see cref="IServiceProvider"/> and <see cref="IExportProvider"/>.
+        /// </summary>
+        /// <param name="actionInfo">The related action-info of the action to create.</param>
+        /// <param name="serviceProvider">The service-provider used for dependency-injection.</param>
+        /// <param name="exportProvider">The export-provider used for dependency-injection.</param>
         public static object CreateInstance(ActionInfo actionInfo, IServiceProvider serviceProvider, IExportProvider exportProvider)
         {
             if (actionInfo == null) throw new ArgumentNullException(nameof(actionInfo));

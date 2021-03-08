@@ -25,7 +25,7 @@ namespace ActionWorkflow
 
         public override string ToString()
         {
-            return this.Name + (this.Description == null ? null : $"({this.Description})");
+            return Name + (Description == null ? null : $"({Description})");
         }
 
         /// <summary>

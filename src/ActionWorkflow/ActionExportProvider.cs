@@ -19,7 +19,8 @@ namespace ActionWorkflow
 
         public bool TryExport(Type exportType, string name, object value)
         {
-            if (value == null)
+            if (exportType == null
+                || value == null)
             {
                 return false;
             }
@@ -45,6 +46,11 @@ namespace ActionWorkflow
 
         public bool ContainsExport(Type exportType, string name)
         {
+            if (exportType == null)
+            {
+                return false;
+            }
+
             name = name ?? DefaultExportName;
 
             lock (_exportsLock)
@@ -56,6 +62,11 @@ namespace ActionWorkflow
 
         public object GetExport(Type exportType, string name)
         {
+            if (exportType == null)
+            {
+                return null;
+            }
+            
             name = name ?? DefaultExportName;
             
             lock (_exportsLock)
@@ -87,6 +98,6 @@ namespace ActionWorkflow
             }
         }
 
-        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
